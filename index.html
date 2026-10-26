@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Kies een favoriet en vijf alternatieven uit de Utrechtse middelbare scholen en zet hun open dagen in je agenda.">
+<style>html{color-scheme:light dark}body{margin:0}img{max-width:100%}[hidden]{display:none!important}
+/* Extra vergelijking: reistijd/afstand, criteria en deadlines */
+.prefbox{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.prefbox label{font-size:12px;color:var(--muted)}.prefbox select,.prefbox input{width:100%;padding:7px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--fg)}
+.criteria{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px;margin-top:6px}.criterion{font-size:12px;color:var(--muted)}.criterion b{color:var(--fg)} .route{font-size:13px;margin-top:5px}.deadline{border-left:3px solid var(--warn);padding-left:8px}.tag.deadline{background:var(--warn);color:white}
+@media(max-width:520px){.prefbox,.criteria{grid-template-columns:1fr}}
+
+
+.admission{margin-top:9px;padding:9px 10px;border-radius:8px;background:var(--surface2,#f7f7f5);border:1px solid var(--line);font-size:12px;line-height:1.45}.admission b{color:var(--fg)}.admission .note{color:var(--muted);margin-top:8px}.admsteps{margin:6px 0 8px 20px;padding:0}.admsteps li{margin:3px 0}.admgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.admgrid>div{padding:7px;border-radius:6px;background:var(--surface);border:1px solid var(--line)}@media(max-width:760px){.admgrid{grid-template-columns:1fr}}
+.lottery-history{margin-top:9px;padding:8px;border-radius:6px;border-left:4px solid #9aa0a6;background:var(--surface)}.lottery-history.lotrisk{border-left-color:#c0392b}.lottery-history.no-lotrisk{border-left-color:#6b8e23}
+.evidence{margin-top:7px;padding-top:7px;border-top:1px dashed var(--line)}.confidence{font-weight:700}.conf-zeerhoog,.conf-hoog{color:#25713a}.conf-middel{color:#9a6500}
+</style>
+<title>Schoolkeuze Utrecht</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: two-column workbench on desktop (schools left, voorkeurslijst + agenda right), stacked on phone. */
+:root{
+  --bg:#f6f5f1; --surface:#ffffff; --surface-2:#edebe4; --line:#d8d4c8;
+  --fg:#1d2733; --muted:#5e6673; --ink:#243b53; --accent:#b8600f; --accent-fg:#ffffff;
+  --fav:#243b53; --fav-fg:#ffffff; --ok:#2f7a4a; --warn:#9a5b00;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#15191f; --surface:#1e242c; --surface-2:#262d37; --line:#374050;
+  --fg:#e9e7e0; --muted:#a3a9b3; --ink:#c9d7e6; --accent:#e08a3c; --accent-fg:#1a1208;
+  --fav:#9fc0e0; --fav-fg:#0f1a26; --ok:#6fbf86; --warn:#e0a84a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#15191f; --surface:#1e242c; --surface-2:#262d37; --line:#374050;
+  --fg:#e9e7e0; --muted:#a3a9b3; --ink:#c9d7e6; --accent:#e08a3c; --accent-fg:#1a1208;
+  --fav:#9fc0e0; --fav-fg:#0f1a26; --ok:#6fbf86; --warn:#e0a84a; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.05}
+h1{font-size:clamp(34px,6vw,52px);font-weight:700;letter-spacing:-.01em;color:var(--ink)}
+h2{font-size:22px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink)}
+h3{font-size:19px;font-weight:600}
+p{margin:0}
+.lede{max-width:62ch;color:var(--muted);margin-top:8px}
+header{display:flex;flex-wrap:wrap;gap:16px 32px;align-items:flex-end;justify-content:space-between;padding-bottom:20px;border-bottom:2px solid var(--ink);margin-bottom:24px}
+.eyebrow{font-family:var(--display);text-transform:uppercase;letter-spacing:.12em;font-size:13px;color:var(--accent);font-weight:600}
+.grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:28px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:1fr}}
+.col{min-width:0;display:flex;flex-direction:column;gap:16px}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.toolbar input[type=search]{flex:1 1 180px;min-width:0;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--fg);font:inherit}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:4px 11px;font:500 13px var(--body);cursor:pointer}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.schools{display:flex;flex-direction:column;gap:8px;list-style:none;margin:0;padding:0}
+.school{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+.school.is-fav{border-color:var(--fav);box-shadow:inset 4px 0 0 var(--fav)}
+.school.is-alt{box-shadow:inset 4px 0 0 var(--accent)}
+.school .name{font-weight:600}
+.school .name a{color:inherit;text-decoration:none;border-bottom:1px solid var(--line)}
+.school .meta{color:var(--muted);font-size:13px;display:flex;flex-wrap:wrap;gap:4px 10px}
+.school .meta b{font-weight:600;color:var(--fg)}
+.school .acts{display:flex;flex-direction:column;gap:6px;align-items:stretch}
+.btn{font:600 13px var(--body);padding:6px 10px;border-radius:6px;border:1px solid var(--line);background:var(--surface-2);color:var(--fg);cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--ink)}
+.btn.fav{background:var(--fav);color:var(--fav-fg);border-color:var(--fav)}
+.btn.alt{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible,.chip:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+.panel.sticky{position:sticky;top:calc(12px + env(safe-area-inset-top,0px))}
+@media (max-width:860px){.panel.sticky{position:static}}
+.count{font-family:var(--display);font-size:15px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.count.full{color:var(--ok)}
+.ranked{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;counter-reset:r}
+.ranked li{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.ranked li.fav{background:var(--fav);color:var(--fav-fg);border-color:var(--fav)}
+.ranked li .rank{font-family:var(--display);font-size:22px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums}
+.ranked li .label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;opacity:.8}
+.ranked li .mini{display:flex;gap:4px}
+.ranked li .mini .btn{padding:4px 7px;background:transparent;color:inherit;border-color:currentColor;opacity:.85}
+.empty{color:var(--muted);font-style:italic;padding:10px 0}
+.slot{border:1px dashed var(--line);border-radius:8px;padding:8px 10px;color:var(--muted);font-size:13px}
+.agenda-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.month{margin-top:14px}
+.month h3{font-size:15px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding-bottom:6px;border-bottom:1px solid var(--line)}
+.events{list-style:none;margin:0;padding:0}
+.ev{display:grid;grid-template-columns:auto 56px minmax(0,1fr);gap:8px 12px;padding:10px 0;border-bottom:1px solid var(--line);align-items:start}
+.ev:last-child{border-bottom:0}
+.ev input{margin-top:4px;accent-color:var(--accent)}
+.ev .date{font-family:var(--display);font-weight:700;font-size:22px;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums}
+.ev .date small{display:block;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+.ev .what{font-weight:600}
+.ev .who{color:var(--muted);font-size:13px}
+.ev .tag{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:1px 6px;border-radius:4px;background:var(--surface-2);color:var(--fg);margin-left:6px;vertical-align:middle}
+.ev .tag.open{background:var(--accent);color:var(--accent-fg)}
+.ev .note{color:var(--warn);font-size:13px}
+.ev .links{font-size:13px;display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:2px}
+.ev .links a{color:var(--ink)}
+.export{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px;padding-top:14px;border-top:2px solid var(--ink)}
+.export .btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);padding:10px 14px;font-size:14px}
+.status{font-size:13px;color:var(--muted);min-height:1.2em;flex:1 1 100%}
+.status.ok{color:var(--ok)} .status.err{color:var(--warn)}
+details{margin-top:10px;font-size:13px;color:var(--muted)}
+details pre{white-space:pre-wrap;word-break:break-all;font-size:11px;max-height:200px;overflow:auto;background:var(--surface-2);padding:8px;border-radius:6px}
+.school .info{grid-column:1/-1;border-top:1px solid var(--line);padding-top:10px;margin-top:4px;display:flex;flex-direction:column;gap:6px;font-size:14px;max-width:70ch}
+.links{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--muted)}
+.links a{color:var(--ink)}
+#sel{display:flex;flex-direction:column;margin-top:6px}
+.sel-item{display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+.sel-item:last-child{border-bottom:0;padding-bottom:0}
+.sel-item .rank{font-family:var(--display);font-size:20px;font-weight:700;text-align:center;line-height:34px;height:34px;border-radius:50%;background:var(--surface-2);color:var(--ink);font-variant-numeric:tabular-nums}
+.sel-item .rank.fav{background:var(--fav);color:var(--fav-fg)}
+.sel-body{min-width:0;display:flex;flex-direction:column;gap:5px}
+.sel-body .label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.sel-body h3 a{color:var(--fg);text-decoration:none;border-bottom:1px solid var(--line)}
+.sel-body .meta{font-size:13px;color:var(--muted)}
+.sel-body p{font-size:14px;max-width:68ch}
+footer{margin-top:36px;color:var(--muted);font-size:13px;max-width:70ch}
+footer a{color:var(--ink)}
+@media (prefers-reduced-motion:no-preference){.school,.ranked li{transition:box-shadow .15s,border-color .15s}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <div class="eyebrow">Overstap groep 8 · schooljaar 2027-2028</div>
+    <h1>Schoolkeuze Utrecht</h1>
+    <p class="lede">Kies één favoriet en vijf alternatieven uit de geselecteerde middelbare scholen in Utrecht en Bilthoven. Rechts verschijnen de open dagen en lesmiddagen van jouw keuzes; die zet je in één keer in je agenda.</p>
+  </div>
+  <div class="count" id="count">0 van 6 gekozen</div>
+</header>
+
+<div class="grid">
+  <section class="col" aria-labelledby="h-scholen">
+    <h2 id="h-scholen">Scholen</h2>
+    <div class="toolbar">
+      <input type="search" id="q" placeholder="Zoek op naam of wijk" aria-label="Zoek school">
+      <button class="chip" data-f="alle" aria-pressed="true">Alle</button>
+      <button class="chip" data-f="vwo" aria-pressed="false">vwo</button>
+      <button class="chip" data-f="havo" aria-pressed="false">havo</button>
+      <button class="chip" data-f="mavo" aria-pressed="false">mavo/tl</button>
+      <button class="chip" data-f="vmbo" aria-pressed="false">vmbo bb/kb</button>
+      <button class="chip" data-f="pro" aria-pressed="false">pro</button>
+    </div>
+    <div class="panel" style="padding:12px">
+      <h3>Vergelijkcriteria &amp; reistijd</h3>
+      <div class="prefbox">
+        <label>Vertrekpunt<input id="origin" type="text" value="Utrecht Centrum" placeholder="Vul je eigen vertrekpunt in"></label>
+        <label>Vervoer<select id="mode"><option value="bicycling">Fiets</option><option value="transit">OV</option><option value="driving">Auto</option><option value="walking">Lopen</option></select></label>
+      </div>
+      <p class="status">Standaard vertrekpunt: Utrecht Centrum. Vul desgewenst je eigen vertrekpunt in en kies fiets, OV, auto of lopen; per school opent Google Maps de actuele route, afstand en reistijd.</p>
+    </div>
+    <ul class="schools" id="schools"></ul>
+  </section>
+
+  <section class="col" aria-labelledby="h-lijst">
+    <div class="panel">
+      <div class="agenda-head">
+        <h2 id="h-lijst">Jouw voorkeurslijst</h2>
+        <button class="btn ghost" id="reset">Wis lijst</button>
+      </div>
+      <ol class="ranked" id="ranked"></ol>
+    </div>
+
+    <div class="panel" id="sel-panel" hidden>
+      <h2>Over jouw scholen</h2>
+      <div id="sel"></div>
+    </div>
+
+    <div class="panel" id="agenda-panel">
+      <div class="agenda-head">
+        <h2>Open dagen &amp; lesmiddagen</h2>
+        <div class="filters" id="typefilters">
+          <button class="chip" data-t="open" aria-pressed="true">Open dag/avond</button>
+          <button class="chip" data-t="info" aria-pressed="true">Infoavond</button>
+          <button class="chip" data-t="les" aria-pressed="true">Lesmiddag</button>
+        </div>
+      </div>
+      <div id="agenda"><p class="empty">Kies eerst scholen; de bijbehorende data verschijnen hier op datum.</p></div>
+      <div class="export" id="export" hidden>
+        <button class="btn primary" id="dl">Download agenda-bestand (.ics)</button>
+        <button class="btn" id="copy">Kopieer .ics-tekst</button>
+        <p class="status" id="status">Het .ics-bestand bevat alle aangevinkte afspraken; open het in Apple Agenda of Outlook, of importeer het in Google Agenda via Instellingen › Importeren.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  Data: open dagen volgens <a href="https://www.devogids.nl/middelbare-scholen/utrecht">De VO Gids</a> en schoolwebsites; Het Nieuwe Lyceum-data gecontroleerd op 26 oktober 2026. Werkplaats-bezoekdata waren in de geraadpleegde bronnen nog niet gepubliceerd.  leerlingaantallen DUO 2025-2026 via <a href="https://allecijfers.nl/middelbare-scholen/gemeente-utrecht/">allecijfers.nl</a>. Scholen passen data soms aan en vragen vaak om vooraf aanmelden, meestal via de basisschool. Controleer de schoolwebsite vlak voor een bezoek. De typeringen zijn samengevat uit hoe de scholen zichzelf presenteren; voor resultaten en tevredenheid is Scholen op de kaart de onafhankelijke bron. Je lijst wordt alleen in deze browser onthouden.
+</footer>
+</div>
+
+<script>
+// ---- Data -------------------------------------------------------------
+// ev: [date, type, title, start, end, note]  type: open | info | les
+const SCHOOLS = [
+ {id:"at",name:"Academie Tien",wijk:"Leidsche Rijn",lev:["mavo","havo","vwo"],den:"openbaar",n:1350,web:"http://www.academietien.nl",sodk:"https://scholenopdekaart.nl/middelbare-scholen/utrecht/23733/academie-tien",adres:"Berlijnplein 300, Utrecht",ev:[
+  ["2026-11-05","open","Open avond","18:00","21:00",""],["2026-11-12","les","Minilessen","15:30","17:00","aanmelden"],["2027-01-24","open","Open dag","12:00","16:00",""],["2027-03-03","les","Minilessen","14:00","16:00","aanmelden"],["2027-03-16","les","Minilessen","14:00","16:00","aanmelden"]]},
+ {id:"am",name:"Amadeus Lyceum",wijk:"Vleuten",lev:["mavo","havo","vwo"],den:"protestants-christelijk",n:1550,web:"http://www.amadeuslyceum.nl",sodk:"https://scholenopdekaart.nl/middelbare-scholen/vleuten/1013/amadeus-lyceum",adres:"Burchtpoort 3, Vleuten",ev:[
+  ["2027-01-29","open","Open avond","18:00","21:00",""],["2027-01-30","open","Open dag","10:00","13:00",""]]},
+ {id:"des",name:"Descart",wijk:"Kanaleneiland / Transwijk",lev:["havo","vwo"],den:"bijzonder (PCOU Willibrord)",n:1420,web:"https://www.descart.nl",sodk:"https://scholenopdekaart.nl/middelbare-scholen/utrecht/26558/descart",adres:"Grebbeberglaan 7, Utrecht",ev:[
+  ["2026-12-02","info","Open huis (groep 8)","","","vooraf inschrijven noodzakelijk via descart.nl/open"],["2027-01-14","info","Open huis (groep 8)","","","vooraf inschrijven noodzakelijk via descart.nl/open"],["2027-02-07","open","Dwaal door Descart (open dag)","","","meer informatie via descart.nl/open"]]},
+ {id:"glo",name:"Globe College",wijk:"Kanaleneiland",lev:["vmbo","mavo","havo"],den:"christelijk / interconfessioneel",n:760,web:"http://www.globecollege.nl",sodk:"https://scholenopdekaart.nl/middelbare-scholen/utrecht/1033/globe-college-utrecht-vmbo",adres:"Bontekoelaan 1, Utrecht",ev:[
+  ["2026-11-28","open","Open dag","10:00","15:00",""],["2027-02-05","info","Informatieavond","18:30","20:00",""],["2027-02-06","open","Open dag","10:00","15:00",""],["2027-02-16","les","Open lesmiddag","13:00","15:30","school noemt ook 13:30"],["2027-03-03","les","Open lesmiddag","13:00","15:30","school noemt ook 13:30"]]},
+ {id:"boni",name:"Het Boni (St. Bonifatiuscollege)",wijk:"Oost",lev:["havo","vwo"],den:"rooms-katholiek",n:1600,web:"https://boni.nl",sodk:"https://scholenopdekaart.nl/middelbare-scholen/utrecht/1020/st-bonifatiuscollege",adres:"Burg. Fockema Andreaelaan 7, Utrecht",ev:[
+  ["2026-12-08","info","Informatieavond ouders groep 8","","","tijd op boni.nl"],["2027-02-06","open","Open dag","10:00","13:00",""],["2027-02-16","les","Open lesmiddag groep 8","","","tijd op boni.nl"],["2027-03-03","les","Open lesmiddag groep 8","","","tijd op boni.nl"]]},
+ {id:"kra",name:"Kranenburg Praktijkonderwijs",wijk:"Oost",lev:["pro"],den:"rooms-katholiek",n:200,web:"https://www.pro-kranenburg.nl",sodk:"https://scholenopdekaart.nl/middelbare-scholen/utrecht/1016/kranenburg-praktijkonderwijs",adres:"Tamboersdijk 9, Utrecht",ev:[
+  ["2026-11-17","info","Informatiemiddag","14:00","15:30","open lesmiddag leerlingen + informatiemiddag ouders groep 7 & 8"],
+  ["2027-02-16","info","Informatiemiddag","14:00","15:30","open lesmiddag leerlingen + informatiemiddag ouders groep 7 & 8"],
+  ["2027-03-03","info","Informatiemiddag","14:00","15:30","open lesmiddag leerlingen + informatiemiddag ouders groep 7 & 8"]]},
+ {id:"lrc",name:"Leidsche Rijn College",wijk:"Leidsche Rijn",lev:["havo","vwo"],den:"openbaar",n:1300,web:"http://www.lrc.nl",sodk:"https://scholenopdekaart.nl/middelbare-scholen/utrecht/2319/leidsche-rijn-college",adres:"Maartvlinder 1, Utrecht",ev:[
+  ["2026-11-18","info","Informatieavond","19:30","20:30",""],["2027-01-21","open","Open dag","17:00","20:30",""],["2027-02-16","les","Lesjesmiddag","15:00","16:30",""],["2027-03-03","les","Lesjesmiddag","15:00","16:30",""],["2027-03-18","info","Online informatieavond","19:30","20:30",""]]},
+ {id:"sas",name:"School aan de Singel Montessori",wijk:"Binnenstad",lev:["mavo","havo","vwo"],den:"openbaar, montessori",n:253,web:"https://www.schoolaandesingel.nl",sodk:"https://scholenopdekaart.nl/middelbare-scholen/utrecht/2171/school-aan-de-singel-montessori-havo-vwo",adres:"Wittevrouwenkade 4, Utrecht",ev:[
+  ["2026-11-21","open","Open dag","10:00","14:00",""],
+  ["2027-01-30","open","Open dag","10:00","14:00",""]]},
+ {id:"unic",name:"UniC",wijk:"Kanaleneiland / Transwijk",lev:["havo","vwo"],den:"openbaar",n:1020,web:"http://www.unic-utrecht.nl",sodk:"https://scholenopdekaart.nl/middelbare-scholen/utrecht/22452/unic",adres:"Van Bijnkershoeklaan 2, Utrecht",ev:[
+  ["2026-11-24","info","Informatieavond","18:30","21:30","voor ouders van leerlingen in groep 8"],
+  ["2026-11-26","info","Informatieavond","18:30","21:30","voor ouders van leerlingen in groep 8"],
+  ["2027-02-05","open","Open dag","18:00","21:00",""],
+  ["2027-02-06","open","Open dag","10:30","13:00",""],
+  ["2027-02-16","les","Introductielesjes","13:30","16:00","aanmelden via schoolwebsite"],
+  ["2027-03-03","les","Introductielesjes","13:30","16:00","aanmelden via schoolwebsite"]]},
+ {id:"wal",name:"Waldorf Utrecht",wijk:"Binnenstad / Noord",lev:["mavo","havo","vwo"],den:"antroposofisch (vrijeschool)",n:500,web:"https://www.waldorfutrecht.nl",sodk:"https://scholenopdekaart.nl/middelbare-scholen/utrecht/1018/waldorf-utrecht",adres:"Van Asch van Wijckskade 20, Utrecht",ev:[
+  ["2027-01-29","open","Open avond","17:00","20:00",""],["2027-01-30","open","Open dag","10:00","14:00",""]]},
+ {id:"x11",name:"X11 media en vormgeving",wijk:"Rivierenwijk / Transwijk",lev:["vmbo","mavo","havo"],den:"openbaar",n:1100,web:"http://www.x11.nu",sodk:"https://scholenopdekaart.nl/middelbare-scholen/utrecht/2322/x11",adres:"Vondellaan 178, Utrecht",ev:[
+  ["2026-11-19","open","Open avond","16:30","19:30","locatie Van Bijnkershoeklaan 8"],["2027-01-23","open","Open dag","10:00","15:00","locatie Van Bijnkershoeklaan 8"]]},
+ {id:"hnl",name:"Het Nieuwe Lyceum",wijk:"Bilthoven",lev:["havo","vwo"],den:"algemeen bijzonder",n:1106,web:"https://www.hetnieuwelyceum.nl/",sodk:"https://scholenopdekaart.nl/",adres:"Jan Steenlaan 38, 3723 BV Bilthoven",ev:[
+  ["2026-12-16","les","JUMPstartmiddag","15:00","17:00",""],["2027-01-06","les","JUMPstartmiddag","15:00","17:00",""],["2027-01-13","les","JUMPstartmiddag","15:00","17:00","aanmelden via schoolwebsite"],["2027-02-06","open","Open dag","09:00","13:30",""],["2027-02-17","les","Lesjesmiddag","15:00","16:30",""],["2027-03-03","les","Lesjesmiddag","15:00","16:30",""]]},
+ {id:"wkg",name:"Werkplaats Kindergemeenschap",wijk:"Bilthoven",lev:["mavo","havo","vwo"],den:"algemeen bijzonder",n:1420,web:"https://www.wpkeesboeke.nl/vo/",sodk:"https://scholenopdekaart.nl/middelbare-scholen/bilthoven/3095/werkplaats-kindergemeenschap-vo/",adres:"Kees Boekelaan 12, 3723 BA Bilthoven",ev:[
+  ["2026-11-11","info","Informatiemiddag","14:00","17:00","voor ouders/verzorgers van groep 8; zie schoolwebsite"],
+  ["2027-01-29","open","Open Huis","19:30","21:30","voor kinderen en ouders/verzorgers van groep 7/8"],
+  ["2027-01-30","open","Open Huis","09:30","13:00","voor kinderen en ouders/verzorgers van groep 7/8"]]},
+];
+// Typering: samengevat uit de eigen presentatie van de scholen (De VO Gids en schoolwebsites).
+const SUM = {
+"at": "School voor vwo, havo en mavo vanaf 10 jaar. Leerlingen werken in coachgroepen en units, volgen vakken op passend niveau en werken per periode aan grote vragen.",
+"am": "Cultuurprofielschool met veel aandacht voor kunst, cultuur en media. Leerlingen werken in domeinen, leren zelfstandig plannen en werken veel samen.",
+"des": "School voor havo en vwo met de combinatie Design, Science & Art. Creativiteit, uitdagend onderwijs en wekelijkse Studio's zijn belangrijke onderdelen.",
+"glo": "VMBO XL-school met aandacht voor techniek, sport, kunst en cultuur. Biedt basis, kader, mavo en een mavo/havo-kansklas (TOP-havo).",
+"boni": "CultuurProfielSchool voor havo, atheneum en gymnasium, met persoonlijke ontwikkeling, flexuren, cultuur en internationale en maatschappelijke thema's.",
+"kra": "Praktijkonderwijs voor leerlingen van 12 tot 18 jaar die praktisch leren. Veel praktijklessen, stages en branche-opleidingen; ook een Entree-opleiding in samenwerking met ROC Midden Nederland.",
+"lrc": "Havo/vwo-school waar 80% van het onderwijs uit kernlessen en 20% uit keuzelessen bestaat. Heeft een vaste klas en mentor, internationalisering en gymnasium.",
+"sas": "Montessorischool voor vmbo-t, havo en vwo. Leerlingen krijgen ruimte om zelfstandig keuzes te maken en gebruiken de stad Utrecht als onderdeel van de leeromgeving.",
+"unic": "Havo/vwo-school met ontwikkelingsgericht onderwijs, een brede driejarige onderbouw, kleine mentorgroepen van 15 leerlingen en leren in thema's en projecten.",
+"wal": "Vrijeschool voor mavo, havo en vwo met modern vrijeschoolonderwijs. De ontwikkeling van hoofd, hart en handen en kunstzinnige verwerking spelen een centrale rol.",
+"x11": "School voor vmbo en havo met focus op media, vormgeving, cultuureducatie en techniek. Voor toelating hoort een creatieve opdracht en portfolio bij de procedure.",
+"hnl": "School met havo/vwo-routes, O&O (Onderzoek & Ontwerpen) en gymnasium. Daarnaast is er aandacht voor kunst, cultuur, communicatie en talen.",
+"wkg": "School voor mavo, havo en vwo met een tweejarige brugperiode. Werkt in zeven teams en domeinen en biedt veel creatieve vakken en WP-talentactiviteiten."
+};
+const CRITERIA = {
+ at:{brug:"mavo · havo · vwo",concept:"units & coachgroepen",accent:"grote vragen · filosofie · leren op niveau"},
+ am:{brug:"mavo · havo · vwo",concept:"domeinen & zelfstandig plannen",accent:"kunst · cultuur · media"},
+ des:{brug:"havo · vwo",concept:"degelijk onderwijs + creatieve ontwikkeling",accent:"Design · Science · Art · Studio's"},
+ glo:{brug:"basis · kader · mavo · mavo/havo",concept:"praktijkgericht VMBO XL",accent:"techniek · sport · kunst & cultuur"},
+ boni:{brug:"havo/vwo · atheneum · gymnasium",concept:"flexrooster & coaching",accent:"cultuur · Unesco · Geo Future"},
+ kra:{brug:"praktijkonderwijs",concept:"leren door doen",accent:"praktijklessen · stages · Entree"},
+ lrc:{brug:"havo · vwo · gymnasium",concept:"80% kernlessen · 20% keuzelessen",accent:"internationalisering · gymnasium"},
+ sas:{brug:"vmbo-t · havo · vwo",concept:"montessori",accent:"stad als klaslokaal · projecten"},
+ unic:{brug:"brede 3-jarige onderbouw havo/vwo",concept:"ontwikkelingsgericht",accent:"thema's · projecten · mentorgroep 15"},
+ wal:{brug:"mavo · havo · vwo",concept:"vrijeschool",accent:"hoofd · hart · handen · kunst"},
+ x11:{brug:"vmbo · havo",concept:"creatief-technisch",accent:"media · vormgeving · techniek"},
+ hnl:{brug:"havo/vwo · gymnasium",concept:"onderzoek & ontwerpen",accent:"O&O · kunst & cultuur · talen"},
+ wkg:{brug:"2-jarige brugperiode",concept:"7 teams & domeinen",accent:"mavo-havo · havo-vwo · gymnasium · creatief"}
+};
+
+const ADMISSION = {
+ at:{steps:["Geef Academie Tien op in de voorkeurslijst die je met de basisschool opstelt.","De basisschool dient de aanmelding in volgens de Utrechtse POVO-procedure.","Controleer na de plaatsingsronde het plaatsingsbesluit."],capacity:"280 plaatsen in leerjaar 1.",lottery:"De officiële aanmeldpagina noemt geen actuele lotingsdrempel; bij overaanmelding gelden de regionale plaatsingsregels.",requirements:"Schooladvies GL/TL, GL/TL-havo, havo, havo-vwo of vwo. Geen gymnasiumklassen.",source:"Officiële schoolwebsite"},
+ am:{steps:["Geef Amadeus op in de voorkeurslijst bij de basisschool.","De basisschool meldt digitaal aan via Onderwijs Transparant; gebruik geen los inschrijfformulier.","De basisschool communiceert het plaatsingsbesluit; Amadeus stuurt daarna een schriftelijke bevestiging."],capacity:"De officiële pagina noemt voor 2026-2027 350 plaatsen, circa 12 brugklassen. Voor 2027-2028 is nog geen nieuw aantal gepubliceerd.",lottery:"Bij overaanmelding kan digitale loting volgens het Bostonmechanisme onder notarieel toezicht plaatsvinden, eventueel per niveau.",requirements:"Plaatsing in tl/havo-, havo/vwo- of vwo-brugklas passend bij het basisschooladvies.",source:"Officiële schoolwebsite"},
+ des:{steps:["Zet Descart op de voorkeurslijst via de basisschool.","De basisschool verwerkt de aanmelding via Onderwijs Transparant volgens POVO Utrecht.","Bij plaatsing volgt voor de zomervakantie een kennismaking met klas en mentor."],capacity:"254 plaatsen voor nieuwe leerlingen in 2027-2028.",lottery:"Alleen bij meer aanmeldingen dan plaatsen voor het betreffende niveau; eventuele loting is onder notarieel toezicht. Geen broertjes-/zusjesregeling.",requirements:"Vwo-advies: vwo-klas. Havo/vwo-advies: vwo/havo-brugklas. De officiële pagina noemt geen instroom met een enkelvoudig havo-advies.",source:"Officiële schoolwebsite"},
+ glo:{steps:["Geef Globe College door aan de groep-8-leerkracht.","De basisschool meldt aan via Onderwijs Transparant volgens de Utrechtse POVO-procedure.","Volg daarna het regionale plaatsingsbesluit."],capacity:"De geraadpleegde officiële pagina publiceert geen actueel aantal brugklasplaatsen voor 2027-2028.",lottery:"Geen schoolspecifieke lotingsinformatie gevonden; bij overaanmelding gelden de Utrechtse POVO-regels.",requirements:"Brugklassen/leerwegen voor BBL, KBL, mavo en TOP-havo. TOP-havo is bedoeld voor leerlingen met vmbo-tl- of havo-advies.",source:"Officiële schoolwebsite + De VO Gids"},
+ boni:{steps:["Zet het Boni met de gewenste brugklasroute op de voorkeurslijst via de basisschool.","De basisschool meldt aan via Onderwijs Transparant volgens de Utrechtse POVO-procedure.","Het plaatsingsbesluit voor 2027 wordt op 21 april via Onderwijs Transparant bekendgemaakt; de school stuurt daarna het officiële bericht."],capacity:"Voor 2026-2027 noemt het Boni 10 brugklassen. Het definitieve aantal voor 2027-2028 is nog niet gepubliceerd.",lottery:"Loting is mogelijk. De school meldt dat in recente jaren voor havo/vwo is geloot en in het vorige schooljaar ook enkele vwo-leerlingen zijn uitgeloot. Geen broertjes-/zusjesregeling.",requirements:"Havo of havo/vwo: havo/vwo-brugklas. Enkelvoudig vwo: keuze voor atheneum- of gymnasiumbrugklas.",source:"Officiële schoolwebsite"},
+ kra:{steps:["Bespreek met de basisschool of praktijkonderwijs passend is.","Kranenburg beoordeelt met de school en het samenwerkingsverband welke toelatingsroute nodig is.","Zorg dat advies, dossier en eventuele toelaatbaarheidsverklaring compleet zijn vóór definitieve plaatsing."],capacity:"De school is gebouwd voor circa 200 leerlingen; een actueel aantal brugklasplaatsen is niet gepubliceerd.",lottery:"Geen officiële informatie gevonden over loting voor de brugklas.",requirements:"Praktijkonderwijs is bedoeld voor leerlingen voor wie praktisch leren beter past en die meer leertijd nodig hebben. Een formele beoordeling/toelaatbaarheidsverklaring kan onderdeel zijn van de toelating.",source:"Officiële schoolwebsite + Scholen op de Kaart"},
+ lrc:{steps:["Zet het LRC op de voorkeurslijst bij de basisschool.","Omdat het woonadres in Utrecht ligt, regelt de basisschool de inschrijving via POVO/Onderwijs Transparant.","Volg het plaatsingsbericht en de verdere intake-informatie van het LRC."],capacity:"De officiële aanmeldpagina publiceert nog geen aantal plaatsen voor 2027-2028.",lottery:"Het LRC zegt: 'Als jij voor het LRC kiest, dan kiezen wij voor jou' en vermeldt dat het altijd een plek biedt.",requirements:"Schooladvies havo, havo/vwo of vwo.",source:"Officiële schoolwebsite"},
+ sas:{steps:["Geef School aan de Singel Montessori als voorkeur door aan de basisschool.","De basisschool meldt digitaal aan volgens de algemene Utrechtse POVO-procedure.","Volg daarna het regionale plaatsingsbesluit."],capacity:"Geen actueel aantal brugklasplaatsen voor 2027-2028 gepubliceerd in de geraadpleegde officiële informatie.",lottery:"Geen schoolspecifieke lotingsinformatie gevonden; regionale POVO-regels zijn van toepassing.",requirements:"Vmbo-t-, havo- of vwo-advies.",source:"Officiële schoolwebsite"},
+ unic:{steps:["Zet UniC op de voorkeurslijst die je met de basisschool opstelt.","Omdat het woonadres in Utrecht ligt, regelt de basisschool de digitale aanmelding.","Volg daarna het plaatsingsbesluit en eventuele vervolgcommunicatie van UniC."],capacity:"De officiële pagina noemt 176 brugklasplaatsen voor 2025-2026; voor 2027-2028 is nog geen actueel aantal gepubliceerd.",lottery:"Geen actuele schoolspecifieke lotingsinformatie voor 2027-2028 gepubliceerd.",requirements:"Positief basisschooladvies voor havo of vwo.",source:"Officiële schoolwebsite"},
+ wal:{steps:["Geef Waldorf Utrecht door aan de groep-8-leerkracht.","De basisschool meldt digitaal aan via Onderwijs Transparant volgens POVO Utrecht.","Volg het regionale plaatsingsbesluit; leerlingen starten op Waldorf in klas 7, het eerste VO-leerjaar."],capacity:"Geen actueel aantal brugklasplaatsen voor 2027-2028 gepubliceerd.",lottery:"De school volgt de Utrechtse POVO-regels en streeft naar een evenwichtige niveauverdeling; actuele lotingskans is niet gepubliceerd.",requirements:"Mavo-, havo- of vwo-advies. Leerlingen van zowel vrijescholen als andere basisscholen kunnen zich aanmelden.",source:"Officiële schoolwebsite"},
+ x11:{steps:["Bezoek een open moment en neem deel aan de door X11 beschreven kennismakings-/toelatingsactiviteiten.","Zet X11 op de voorkeurslijst bij de basisschool.","De basisschool meldt aan via de Utrechtse POVO-procedure; bij overaanmelding volgt de regionale lotingsprocedure."],capacity:"De officiële pagina noemt voor 2026-2027 minimaal 160 nieuwe brugklasplaatsen voor leerlingen uit Utrecht. Voor 2027-2028 is nog geen nieuw aantal gepubliceerd.",lottery:"Bij meer aanmeldingen dan plaatsen wordt volgens POVO geloot. X11 houdt rekening met een afgesproken verdeling van 60% vmbo en 40% havo.",requirements:"Vmbo- of havo-advies en aantoonbare belangstelling voor kunst, cultuur, techniek en creativiteit. Brugklassen: bbl/kbl, kbl/tl, tl/havo en havo.",source:"Officiële schoolwebsite"},
+ hnl:{steps:["Zet HNL op de voorkeurslijst en laat de basisschool het dossier en schooladvies aanleveren volgens de regionale procedure.","Kies bij een enkelvoudig vwo-advies eventueel vanaf de brugklas voor gymnasium; anders volgt plaatsing in een havo/vwo-brugklas.","Volg na plaatsing de kennismakings- en introductie-informatie van HNL."],capacity:"De schoolwebsite meldt dat zij bijna 200 brugklassers verwelkomt; een exact vastgesteld aantal plaatsen voor 2027-2028 is niet gepubliceerd.",lottery:"De VO Gids vermeldt dat een leerling die HNL bovenaan de voorkeurslijst zet zeker een plek heeft; controleer deze toezegging bij de actuele aanmeldronde.",requirements:"Havo-, havo/vwo- of vwo-advies. Gymnasiumkeuze vanaf de brugklas vereist een enkelvoudig vwo-advies.",source:"Officiële schoolwebsite + De VO Gids"},
+ wkg:{steps:["Geef de Werkplaats en de gewenste brugklasroute via de basisschool op in Onderwijs Transparant.","Laat basisschooladvies en onderwijskundig rapport volledig aanleveren; zonder compleet dossier is de aanmelding niet geldig.","Geef meerdere scholen in voorkeursvolgorde op en wacht het centrale plaatsingsbesluit af."],capacity:"Voor 2026-2027: 9 brugklassen, verdeeld over 3 mavo/havo-, 4 havo/atheneum- en 2 gymnasiumklassen. De capaciteit voor 2027-2028 is nog niet gepubliceerd.",lottery:"Bij overaanmelding wordt binnen voorrangscategorieën geloot. Voor de categorie overige aanmeldingen is in de gepubliceerde 2026-2027-procedure 60% van de plekken bestemd voor gemeente De Bilt en 40% voor daarbuiten, waaronder Utrecht-stad. Vanuit het opgegeven Utrechtse adres valt de leerling in die laatste groep.",requirements:"Mavo/havo: minimaal vmbo-gl/tl; een advies met kader is niet voldoende. Havo/atheneum: minimaal enkelvoudig havo. Gymnasium: enkelvoudig vwo. Toelaatbaarheid wordt bepaald op basis van advies en onderwijskundig rapport.",source:"Officiële toelatingsprocedure Werkplaats 2026-2027"}
+};
+const LOTTERY_HISTORY = {
+ at:{status:"Geen loting gevonden in de gecontroleerde 2025-2026 bronnen",years:[]},
+ am:{status:"Geen loting gevonden in 2025; officiële site verwachtte voor 2026 geen loting",years:[]},
+ des:{status:"Loting in 2025 en 2026",years:[2025,2026],detail:"2025: loting; 2026: enkele leerlingen uitgeloot voor vwo/havo, alle vwo-leerlingen geplaatst."},
+ glo:{status:"Geen loting gevonden in de gecontroleerde 2025-2026 bronnen",years:[]},
+ boni:{status:"Loting in 2025 en volgens de school ook in recente schooljaren",years:[2025,2026],detail:"2025: havo/vwo was sterk overtekend; de school meldt voor 2026-2027 dat in afgelopen schooljaren voor havo/vwo is geloot en het vorige schooljaar ook enkele vwo-leerlingen zijn uitgeloot."},
+ kra:{status:"Geen loting gevonden in de gecontroleerde 2025-2026 bronnen",years:[]},
+ lrc:{status:"Geen loting gevonden in de gecontroleerde 2025-2026 bronnen",years:[]},
+ sas:{status:"Geen loting gevonden in de gecontroleerde 2025-2026 bronnen",years:[]},
+ unic:{status:"Geen loting gevonden in de gecontroleerde 2025-2026 bronnen",years:[]},
+ wal:{status:"Geen loting gevonden in de gecontroleerde 2025-2026 bronnen",years:[]},
+ x11:{status:"Geen loting gevonden in de gecontroleerde 2025-2026 bronnen",years:[]},
+ hnl:{status:"Geen loting gevonden in de gecontroleerde 2025-2026 bronnen",years:[]},
+ wkg:{status:"Loting in 2025",years:[2025],detail:"Werkplaats Kindergemeenschap behoorde in 2025 tot de scholen waar is geloot."}
+};
+function lotteryHistoryHtml(s){const h=LOTTERY_HISTORY[s.id];if(!h)return '';const cls=h.years.length?' lotrisk':' no-lotrisk';return `<div class="lottery-history${cls}"><b>Lotingshistorie</b><br>${h.status}${h.detail?`<div class="note">${h.detail}</div>`:''}<div class="note">Let op: de officiële pagina van Samen Naar Het VO noemt 2023-2024, 2022-2023 en 2021-2022 als 'afgelopen 3 jaar', maar toont de scholen als afbeeldingen. Die historische lijst is daarom niet als tekst verifieerbaar in dit overzicht. Hierboven staan alleen jaartallen die aanvullend expliciet uit actuele bronnen konden worden bevestigd.</div>${lotteryEvidenceHtml(s)}</div>`;}
+const LOTTERY_EVIDENCE = {
+ at:{level:"Hoog",source:"NUOVO Scholen, uitkomst plaatsing 2026-2027",reason:"Bestuur meldt expliciet dat alleen USG binnen NUOVO moest loten; overige NUOVO-scholen konden eerste voorkeur plaatsen. Dit ondersteunt geen loting voor Academie Tien in 2026, maar bewijst niet elk eerder jaar."},
+ am:{level:"Hoog",source:"RTV Utrecht (2023 en 2025) + officiële Amadeus-informatie",reason:"RTV Utrecht noemt Amadeus expliciet als lotingsschool in 2023 en meldt voor 2025 juist 240 instromers en geen loting in het stads-overzicht."},
+ des:{level:"Zeer hoog",source:"RTV Utrecht 2025 + officiële schoolinformatie Descart 2026",reason:"Loting is voor meerdere jaren expliciet en schoolspecifiek bevestigd."},
+ glo:{level:"Hoog",source:"NUOVO Scholen 2026",reason:"Bestuur meldt dat alleen USG binnen NUOVO moest loten in 2026; voor eerdere jaren is de dekking minder volledig."},
+ boni:{level:"Zeer hoog",source:"Officiële FAQ St. Bonifatiuscollege + RTV Utrecht 2023/2025",reason:"De school bevestigt zelf loting in recente schooljaren; RTV Utrecht noemt het Boni ook expliciet in 2023 en 2025."},
+ kra:{level:"Middel",source:"Samen Naar Het VO + gecontroleerde school/regionale bronnen",reason:"Geen expliciete loting gevonden. Afwezigheid in zoekresultaten is geen hard bewijs dat er nooit is geloot."},
+ lrc:{level:"Hoog",source:"NUOVO Scholen 2026 + officiële LRC-aanmeldinformatie",reason:"Voor 2026 expliciet ondersteund door NUOVO; officiële LRC-informatie zegt bovendien dat de school een plek biedt, maar eerdere jaren zijn niet volledig gedekt."},
+ sas:{level:"Middel",source:"Samen Naar Het VO + gecontroleerde school/regionale bronnen",reason:"Geen expliciete loting gevonden; historische dekking is niet volledig tekstueel verifieerbaar."},
+ unic:{level:"Hoog",source:"NUOVO Scholen 2026",reason:"Voor 2026 expliciet ondersteund; eerdere jaren niet volledig gedekt."},
+ wal:{level:"Middel",source:"Samen Naar Het VO + gecontroleerde school/regionale bronnen",reason:"Geen expliciete loting gevonden; historische dekking is niet volledig."},
+ x11:{level:"Hoog",source:"NUOVO Scholen 2026 + officiële X11-plaatsingsinformatie",reason:"Voor 2026 expliciet ondersteund; de school beschrijft wel hoe loting zou werken bij overaanmelding."},
+ hnl:{level:"Middel",source:"De VO Gids + gecontroleerde schoolinformatie",reason:"Geen expliciete recente loting gevonden; de geraadpleegde bronnen geven geen volledig driejarig historisch overzicht."},
+ wkg:{level:"Zeer hoog",source:"RTV Utrecht 2025 + officiële toelatingsprocedure Werkplaats",reason:"Loting in 2025 is expliciet bevestigd; officiële procedure beschrijft bovendien de lotingsregels bij overaanmelding."}
+};
+function lotteryEvidenceHtml(s){const e=LOTTERY_EVIDENCE[s.id];return e?`<div class="evidence"><b>Bron lotingsinformatie:</b> ${e.source}<br><b>Betrouwbaarheid:</b> <span class="confidence conf-${e.level.toLowerCase().replace('zeer hoog','zeerhoog')}">${e.level}</span><div class="note">${e.reason}</div></div>`:'';}
+let SHARE_ORIGIN = "Utrecht Centrum";
+function admissionHtml(s){const a=ADMISSION[s.id];if(!a)return '';const steps=a.steps.map((x,i)=>`<li><b>${i+1}.</b> ${x}</li>`).join('');return `<div class="admission"><b>Aanmeldstappen</b><ol class="admsteps">${steps}</ol><div class="admgrid"><div><b>Capaciteit</b><br>${a.capacity}</div><div><b>Loting/plaatsing</b><br>${a.lottery}</div><div><b>Toelatingseisen</b><br>${a.requirements}</div></div><div class="note">Bron: ${a.source}. Landelijke centrale aanmeldweek 2027: 25 t/m 31 maart; definitief schooladvies uiterlijk 24 maart.</div>${lotteryHistoryHtml(s)}</div>`;}
+const DEADLINES = [
+ // Voeg school-specifieke inschrijfdeadlines toe zodra officieel gepubliceerd.
+];
+function routeLink(s){const o=(document.querySelector('#origin')?.value||SHARE_ORIGIN).trim();if(!o)return "";const m=document.querySelector('#mode')?.value||'bicycling';return 'https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(o)+'&destination='+encodeURIComponent(s.adres)+'&travelmode='+m;}
+function criteriaHtml(s){const c=CRITERIA[s.id]; if(!c)return ''; const r=routeLink(s); return `<div class="criteria"><span class="criterion"><b>Brugklas:</b> ${c.brug}</span><span class="criterion"><b>Onderwijs:</b> ${c.concept}</span><span class="criterion"><b>Accenten:</b> ${c.accent}</span><span class="criterion"><b>Grootte:</b> ${Number.isFinite(s.n)?fmtN(s.n)+' leerlingen':'n.n.b.'}</span></div>${r?`<div class="route"><a href="${r}" target="_blank" rel="noopener">Route, afstand &amp; actuele reistijd</a></div>`:''}`;}
+const MAX = 6;
+const TYPE_LABEL = {open:"Open dag",info:"Infoavond",les:"Lesmiddag"};
+const DAGEN = ["zo","ma","di","wo","do","vr","za"], MAANDEN = ["januari","februari","maart","april","mei","juni","juli","augustus","september","oktober","november","december"];
+
+// ---- State -------------------------------------------------------------
+let picks = [];          // ranked ids; picks[0] = favoriet
+let levelFilter = "alle", query = "";
+let types = {open:true, info:true, les:true};
+let routePrefs={origin:"",mode:"bicycling"};
+let excluded = new Set(); // event keys unticked
+let openInfo = new Set();  // schools with info expanded
+try { const s = JSON.parse(localStorage.getItem("schoolkeuze-utrecht")||"null"); if (s && Array.isArray(s.picks)) { picks = s.picks.filter(id=>SCHOOLS.some(x=>x.id===id)).slice(0,MAX); excluded = new Set(s.excluded||[]); routePrefs=s.routePrefs||routePrefs; } } catch(e){}
+function persist(){ try{ localStorage.setItem("schoolkeuze-utrecht", JSON.stringify({picks, excluded:[...excluded], routePrefs})); }catch(e){} }
+
+const $ = s => document.querySelector(s);
+const byId = id => SCHOOLS.find(s=>s.id===id);
+const fmtN = n => Number.isFinite(n) ? n.toLocaleString("nl-NL") : "aantal n.n.b.";
+
+// ---- Schools list ------------------------------------------------------
+function renderSchools(){
+  const q = query.trim().toLowerCase();
+  const list = SCHOOLS.filter(s => (levelFilter==="alle" || s.lev.includes(levelFilter)) && (!q || (s.name+" "+s.wijk).toLowerCase().includes(q)));
+  $("#schools").innerHTML = list.map(s=>{
+    const i = picks.indexOf(s.id); const isFav = i===0, isAlt = i>0; const full = picks.length>=MAX && i<0;
+    return `<li class="school ${isFav?'is-fav':''} ${isAlt?'is-alt':''}">
+      <div>
+        <div class="name"><a href="${s.web}" target="_blank" rel="noopener">${s.name}</a>${i>=0?` <span class="tag" style="font-size:11px;color:var(--muted)">#${i+1}${isFav?' favoriet':''}</span>`:''}</div>
+        <div class="meta"><span>${s.wijk}</span><span><b>${s.lev.map(l=>l==="vmbo"?"vmbo bb/kb":l).join(", ")}</b></span><span>${s.den}</span><span>${Number.isFinite(s.n)?fmtN(s.n)+" leerlingen":fmtN(s.n)}</span><span><a href="${s.sodk}" target="_blank" rel="noopener" style="color:var(--ink)">Scholen op de kaart</a></span></div>
+      </div>
+      <div class="acts">
+        ${i<0 ? `<button class="btn fav" data-act="fav" data-id="${s.id}" ${picks.length>0&&picks.length>=MAX?'disabled':''}>Favoriet</button><button class="btn alt" data-act="alt" data-id="${s.id}" ${full?'disabled':''}>Alternatief</button>` : `<button class="btn ghost" data-act="rm" data-id="${s.id}">Verwijder</button>`}
+        <button class="btn ghost" data-act="info" data-id="${s.id}" aria-expanded="${openInfo.has(s.id)}">${openInfo.has(s.id)?'Minder info':'Meer info'}</button>
+      </div>${openInfo.has(s.id)?infoBlock(s):''}</li>`;
+  }).join("") || `<li class="empty">Geen school gevonden.</li>`;
+}
+
+// ---- Info & selection -------------------------------------------------
+function levels(s){ return s.lev.map(l=>l==="vmbo"?"vmbo bb/kb":l).join(", "); }
+function infoBlock(s){
+  return `<div class="info"><p>${SUM[s.id]}</p>${criteriaHtml(s)}${admissionHtml(s)}
+    <div class="links"><span>${s.adres}</span><a href="${s.web}" target="_blank" rel="noopener">Schoolwebsite</a><a href="${s.sodk}" target="_blank" rel="noopener">Scholen op de kaart</a></div></div>`;
+}
+function renderSelection(){
+  $("#sel-panel").hidden = picks.length===0;
+  $("#sel").innerHTML = picks.map((id,i)=>{ const s=byId(id); return `<article class="sel-item">
+    <div class="rank ${i===0?'fav':''}">${i+1}</div>
+    <div class="sel-body"><div class="label">${i===0?'Favoriet':'Alternatief '+i}</div>
+      <h3><a href="${s.web}" target="_blank" rel="noopener">${s.name}</a></h3>
+      <div class="meta">${s.wijk} · ${levels(s)} · ${s.den} · ${Number.isFinite(s.n)?fmtN(s.n)+" leerlingen":fmtN(s.n)}</div>
+      <p>${SUM[s.id]}</p>${criteriaHtml(s)}${admissionHtml(s)}
+      <div class="links"><span>${s.adres}</span><a href="${s.web}" target="_blank" rel="noopener">${s.web.replace(/^https?:\/\/(www\.)?/,'').replace(/\/$/,'')}</a><a href="${s.sodk}" target="_blank" rel="noopener">Scholen op de kaart</a></div>
+    </div></article>`; }).join("");
+}
+
+// ---- Ranked list -------------------------------------------------------
+function renderRanked(){
+  const c = $("#count"); c.textContent = `${picks.length} van ${MAX} gekozen`; c.classList.toggle("full", picks.length===MAX);
+  let html = picks.map((id,i)=>{ const s=byId(id); return `<li class="${i===0?'fav':''}"><div class="rank">${i+1}</div><div><div class="label">${i===0?'Favoriet':'Alternatief '+i}</div><div>${s.name}</div></div><div class="mini">
+    <button class="btn" data-mv="-1" data-id="${id}" ${i===0?'disabled':''} aria-label="Omhoog">▲</button><button class="btn" data-mv="1" data-id="${id}" ${i===picks.length-1?'disabled':''} aria-label="Omlaag">▼</button><button class="btn" data-act="rm" data-id="${id}" aria-label="Verwijder">✕</button></div></li>`; }).join("");
+  for (let i=picks.length;i<MAX;i++) html += `<li class="slot">${i===0?'Nog geen favoriet gekozen':'Alternatief '+i+' nog leeg'}</li>`;
+  $("#ranked").innerHTML = html;
+}
+
+// ---- Agenda ------------------------------------------------------------
+function evKey(s,e){ return s.id+"|"+e[0]+"|"+e[2]; }
+function selectedEvents(){
+  const out=[];
+  picks.forEach((id,rank)=>{ const s=byId(id); s.ev.forEach(e=>{ if(types[e[1]]) out.push({s,e,rank,key:evKey(s,e)}); }); DEADLINES.filter(d=>d[0]===id).forEach(d=>{const e=[d[1],"info",d[2],d[3]||"",d[4]||"",d[5]||""]; if(types.info) out.push({s,e,rank,key:evKey(s,e)});}); });
+  return out.sort((a,b)=> (a.e[0]+a.e[3]).localeCompare(b.e[0]+b.e[3]) || a.rank-b.rank);
+}
+function dateParts(iso){ const [y,m,d]=iso.split("-").map(Number); const dt=new Date(Date.UTC(y,m-1,d)); return {y,m,d,dow:DAGEN[dt.getUTCDay()],maand:MAANDEN[m-1]}; }
+function gcalLink(s,e){
+  const start=e[0].replace(/-/g,""); let dates;
+  if(e[3]){ const st=e[3].replace(":",""), en=(e[4]||addHours(e[3],2)).replace(":",""); dates=`${start}T${st}00/${start}T${en}00`; }
+  else { const n=new Date(e[0]); n.setUTCDate(n.getUTCDate()+1); dates=`${start}/${n.toISOString().slice(0,10).replace(/-/g,"")}`; }
+  const p=new URLSearchParams({action:"TEMPLATE",text:`${e[2]} – ${s.name}`,dates,location:s.adres,details:`${e[5]?e[5]+"\n":""}${s.web}`,ctz:"Europe/Amsterdam"});
+  return "https://calendar.google.com/calendar/render?"+p;
+}
+function addHours(t,h){ const [H,M]=t.split(":").map(Number); return String(Math.min(23,H+h)).padStart(2,"0")+":"+String(M).padStart(2,"0"); }
+function renderAgenda(){
+  const evs=selectedEvents(); const box=$("#agenda"); $("#export").hidden = evs.length===0;
+  if(!evs.length){ box.innerHTML=`<p class="empty">${picks.length?'Geen afspraken voor deze filters.':'Kies eerst scholen; de bijbehorende data verschijnen hier op datum.'}</p>`; return; }
+  const months={}; evs.forEach(x=>{ const p=dateParts(x.e[0]); const k=`${p.maand} ${p.y}`; (months[k]=months[k]||[]).push(x); });
+  box.innerHTML = Object.entries(months).map(([k,items])=>`<div class="month"><h3>${k}</h3><ul class="events">${items.map(x=>{
+    const p=dateParts(x.e[0]); const t=x.e[3]?`${x.e[3]}${x.e[4]?'–'+x.e[4]:''}`:'tijd volgt';
+    return `<li class="ev"><input type="checkbox" id="c-${x.key.replace(/[^a-z0-9]/gi,'_')}" data-key="${x.key}" ${excluded.has(x.key)?'':'checked'} aria-label="Opnemen in agenda">
+      <div class="date">${p.d}<small>${p.dow}</small></div>
+      <div><div class="what">${x.e[2]}<span class="tag ${x.e[1]}">${TYPE_LABEL[x.e[1]]}</span></div>
+      <div class="who">${x.rank===0?'★ ':''}${x.s.name} · ${t}</div>
+      ${x.e[5]?`<div class="note">${x.e[5]}</div>`:''}
+      <div class="links"><a href="${gcalLink(x.s,x.e)}" target="_blank" rel="noopener">+ Google Agenda</a><a href="${x.s.web}" target="_blank" rel="noopener">schoolwebsite</a></div></div></li>`;}).join("")}</ul></div>`).join("");
+}
+
+// ---- ICS ----------------------------------------------------------------
+function icsEsc(s){ return String(s).replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/\n/g,"\\n"); }
+function fold(line){ const out=[]; let s=line; while(s.length>73){ out.push(s.slice(0,73)); s=" "+s.slice(73);} out.push(s); return out.join("\r\n"); }
+function buildICS(){
+  const now=new Date().toISOString().replace(/[-:]/g,"").slice(0,15)+"Z";
+  const L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Schoolkeuze Utrecht//NL","CALSCALE:GREGORIAN","METHOD:PUBLISH","X-WR-CALNAME:Open dagen middelbare scholen Utrecht","X-WR-TIMEZONE:Europe/Amsterdam",
+   "BEGIN:VTIMEZONE","TZID:Europe/Amsterdam","BEGIN:STANDARD","DTSTART:19701025T030000","RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU","TZOFFSETFROM:+0200","TZOFFSETTO:+0100","TZNAME:CET","END:STANDARD","BEGIN:DAYLIGHT","DTSTART:19700329T020000","RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU","TZOFFSETFROM:+0100","TZOFFSETTO:+0200","TZNAME:CEST","END:DAYLIGHT","END:VTIMEZONE"];
+  selectedEvents().filter(x=>!excluded.has(x.key)).forEach(x=>{
+    const [date,type,title,st,en,note]=x.e; const d=date.replace(/-/g,"");
+    L.push("BEGIN:VEVENT",`UID:${x.key.replace(/[^a-z0-9]/gi,"-")}@schoolkeuze-utrecht`,`DTSTAMP:${now}`);
+    if(st){ L.push(`DTSTART;TZID=Europe/Amsterdam:${d}T${st.replace(":","")}00`,`DTEND;TZID=Europe/Amsterdam:${d}T${(en||addHours(st,2)).replace(":","")}00`); }
+    else { const n=new Date(date); n.setUTCDate(n.getUTCDate()+1); L.push(`DTSTART;VALUE=DATE:${d}`,`DTEND;VALUE=DATE:${n.toISOString().slice(0,10).replace(/-/g,"")}`); }
+    L.push(fold(`SUMMARY:${icsEsc(`${title} – ${x.s.name}`)}`), fold(`LOCATION:${icsEsc(x.s.adres)}`), fold(`DESCRIPTION:${icsEsc(`${TYPE_LABEL[type]}${x.rank===0?" · favoriet":" · alternatief "+x.rank}${note?"\n"+note:""}\n\n${SUM[x.s.id]}\n\n${x.s.web}\n${x.s.sodk}`)}`), fold(`URL:${x.s.web}`), "BEGIN:VALARM","TRIGGER:-P1D","ACTION:DISPLAY",fold(`DESCRIPTION:${icsEsc("Morgen: "+title+" – "+x.s.name)}`),"END:VALARM","END:VEVENT");
+  });
+  L.push("END:VCALENDAR"); return L.join("\r\n")+"\r\n";
+}
+
+// ---- Downloads ----------------------------------------------------------
+function setStatus(msg,cls){ const el=$("#status"); el.textContent=msg; el.className="status "+(cls||""); }
+$("#dl").addEventListener("click", ()=>{
+  const ics=buildICS(); const n=(ics.match(/BEGIN:VEVENT/g)||[]).length;
+  if(!n){ setStatus("Vink minstens één afspraak aan.","err"); return; }
+  try{
+    const url=URL.createObjectURL(new Blob([ics],{type:"text/calendar;charset=utf-8"}));
+    const el=document.createElement("a"); el.href=url; el.download="open-dagen-utrecht.ics";
+    document.body.appendChild(el); el.click(); el.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000);
+    setStatus(`open-dagen-utrecht.ics met ${n} afspraken gedownload. Open het bestand in je agenda-app.`,"ok");
+  }catch(e){ setStatus("Downloaden lukte niet; gebruik 'Kopieer .ics-tekst' of de Google Agenda-links.","err"); }
+});
+$("#copy").addEventListener("click", async ()=>{
+  const ics=buildICS(); const n=(ics.match(/BEGIN:VEVENT/g)||[]).length;
+  if(!n){ setStatus("Vink minstens één afspraak aan.","err"); return; }
+  try{ await navigator.clipboard.writeText(ics); setStatus(`.ics-tekst met ${n} afspraken gekopieerd. Plak in een leeg tekstbestand en bewaar het als open-dagen.ics.`,"ok"); }
+  catch(e){ showRaw(ics); setStatus("Kopiëren werd geweigerd; selecteer de tekst hieronder.","err"); }
+});
+function showRaw(ics){ let d=$("#raw"); if(!d){ d=document.createElement("details"); d.id="raw"; d.open=true; d.innerHTML="<summary>.ics-tekst</summary><pre></pre>"; $("#export").after(d);} d.querySelector("pre").textContent=ics; }
+
+// ---- Events -------------------------------------------------------------
+document.addEventListener("click", e=>{
+  const b=e.target.closest("[data-act],[data-mv],[data-f],[data-t]"); if(!b) return;
+  if(b.dataset.act){ const id=b.dataset.id;
+    if(b.dataset.act==="fav"){ picks=picks.filter(x=>x!==id); picks.unshift(id); picks=picks.slice(0,MAX); }
+    if(b.dataset.act==="alt"){ if(!picks.includes(id)&&picks.length<MAX) picks.push(id); }
+    if(b.dataset.act==="rm"){ picks=picks.filter(x=>x!==id); }
+    if(b.dataset.act==="info"){ openInfo.has(id)?openInfo.delete(id):openInfo.add(id); }
+  }
+  if(b.dataset.mv){ const i=picks.indexOf(b.dataset.id), j=i+Number(b.dataset.mv); if(i>=0&&j>=0&&j<picks.length){ [picks[i],picks[j]]=[picks[j],picks[i]]; } }
+  if(b.dataset.f){ levelFilter=b.dataset.f; document.querySelectorAll("[data-f]").forEach(c=>c.setAttribute("aria-pressed",c===b)); }
+  if(b.dataset.t){ types[b.dataset.t]=!types[b.dataset.t]; b.setAttribute("aria-pressed",types[b.dataset.t]); }
+  persist(); renderAll();
+});
+document.addEventListener("change", e=>{ const k=e.target.dataset&&e.target.dataset.key; if(!k) return; if(e.target.checked) excluded.delete(k); else excluded.add(k); persist(); });
+$("#q").addEventListener("input", e=>{ query=e.target.value; renderSchools(); });
+$("#origin").value=routePrefs.origin||SHARE_ORIGIN; $("#mode").value=routePrefs.mode||"bicycling";
+$("#origin").addEventListener("input",e=>{routePrefs.origin=e.target.value;persist();renderSchools();renderSelection();});
+$("#mode").addEventListener("change",e=>{routePrefs.mode=e.target.value;persist();renderSchools();renderSelection();});
+$("#reset").addEventListener("click", ()=>{ picks=[]; excluded=new Set(); persist(); renderAll(); });
+function renderAll(){ renderSchools(); renderRanked(); renderSelection(); renderAgenda(); }
+renderAll();
+</script>
+
+</body>
+</html>
